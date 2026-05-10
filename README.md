@@ -15,6 +15,33 @@ By the end of these exercises, you will have implemented every piece of the atte
 | 5 | Multi-Head Attention | Parallel conversations via `view` + `transpose` |
 | Bonus | `CausalSelfAttention` module | The complete `nn.Module`, demystified |
 
+## Files
+
+Each exercise is available as a standalone file. Every exercise file ends with a **"YOUR TURN"** prompt; the corresponding `_my_turn` file implements and explains it.
+
+### Exercises
+
+| File | Description |
+|------|-------------|
+| `attention_exercises.py` | All exercises in one linear walkthrough |
+| `exercise1.py` | `nn.Embedding` as a lookup table; demonstrates the static problem — "bank" returns the same vector regardless of context |
+| `exercise2.py` | Manual Q, K, V attention (`Q = K = V = X`) on "crane lifted steel"; score → softmax → aggregate, showing how crane absorbs its machine-like context |
+| `exercise3.py` | Adds the `/ √dk` scaling factor and the batch dimension `(B, T, C)`; shows why large `dk` makes softmax collapse without scaling |
+| `exercise4.py` | Builds a `torch.tril` causal mask and applies `masked_fill(..., -inf)` so future tokens contribute zero attention weight |
+| `exercise5.py` | Fused QKV projection via `nn.Linear(C, 3*C)`, head splitting with `.view` + `.transpose`, all heads computed in one batched matmul, then merged back |
+| `exercise_bonus.py` | Packages exercises 1–5 into a clean `CausalSelfAttention(nn.Module)` matching nanoGPT's structure |
+
+### My Turn
+
+| File | Description |
+|------|-------------|
+| `exercise1_my_turn.py` | Creates a 50-word, 8-dim embedding; looks up IDs 0, 1, 2 and explains why different IDs produce different vectors while the same ID always returns the same one |
+| `exercise2_my_turn.py` | Runs the QKV conversation in both machine context (lifted, steel) and bird context (wings, feathers), comparing crane's output vector side-by-side to show context determines meaning |
+| `exercise3_my_turn.py` | Runs scaled vs. unscaled attention at `dk` = 2, 64, and 512; shows raw scores growing linearly with dimension while scaled scores stay bounded |
+| `exercise4_my_turn.py` | Builds the causal mask for a 5-token sentence, annotates exactly which tokens each position can attend to, and verifies the upper triangle is provably zero after softmax |
+| `exercise5_my_turn.py` | Compares `n_head=2` vs `n_head=4` (with `C=8` fixed) side-by-side; shows that output shape is invariant to head count while the attention weights shape and per-head `head_dim` both change |
+| `exercise_bonus_my_turn.py` | Stacks 6 `CausalSelfAttention` blocks and tracks the L2 change in token representations at each layer, confirming shape invariance and grounding the design in GPT-2/GPT-3 depths |
+
 ## Prerequisites
 
 - Basic Python knowledge
@@ -38,21 +65,23 @@ uv init
 uv add torch
 ```
 
-**3. Run the exercises**
+**3. Run an exercise**
 ```bash
-uv run attention_exercises.py
+uv run attention_exercises.py   # full walkthrough
+uv run exercise1.py             # individual exercise
+uv run exercise1_my_turn.py     # worked "YOUR TURN" solution
 ```
 
 > Tested on macOS (Apple Silicon M2). PyTorch's MPS backend is supported automatically — no GPU required.
 
 ## How to Use
 
-The file is structured as a linear walkthrough. Each exercise:
+Each exercise file:
 - Explains the **why** before showing any code
 - Uses **tiny, readable tensors** (3 tokens, 8 dimensions) so every number is traceable
-- Ends with a **"YOUR TURN"** prompt to experiment with
+- Ends with a **"YOUR TURN"** prompt — the `_my_turn` file implements and explains it
 
-You can run the whole file at once, or paste sections into a Python REPL or Jupyter notebook to step through interactively.
+Run `attention_exercises.py` for the full linear walkthrough, or run individual files to focus on one concept. You can also paste any section into a Python REPL or Jupyter notebook to step through interactively.
 
 ## The Core Formula
 
