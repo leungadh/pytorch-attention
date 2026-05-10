@@ -1,0 +1,179 @@
+/Users/andy/Projects/learning/python/pytorch-attention/.venv/bin/python /Users/andy/Projects/learning/python/pytorch-attention/attention_exercises.py
+❯ /Users/andy/Projects/learning/python/pytorch-attention/.venv/bin/python /Users/andy/Projects/learning/python/pytorch-attention/attention_exercises.py
+============================================================
+EXERCISE 1 — Word Embeddings & The Static Problem
+============================================================
+
+Vector for 'bank' in 'river bank' context:
+tensor([[ 1.3123,  0.6872, -1.0892, -0.3553]], grad_fn=<EmbeddingBackward0>)
+
+Vector for 'bank' in 'money bank' context:
+tensor([[ 1.3123,  0.6872, -1.0892, -0.3553]], grad_fn=<EmbeddingBackward0>)
+
+Are they identical? True
+
+>>> WHAT TO NOTICE:
+    Both vectors are exactly the same — even though the meaning is completely
+    different. This is the static problem Zachary described.
+    The attention mechanism is the solution: it will MODIFY these vectors
+    using context from neighboring words.
+
+============================================================
+EXERCISE 2 — The QKV Conversation (crane lifted steel)
+============================================================
+
+Original word vectors (before attention):
+  crane  = [0.699999988079071, 0.699999988079071]
+  lifted = [0.10000000149011612, 0.8999999761581421]
+  steel  = [0.10000000149011612, 0.8999999761581421]
+
+STEP 1 — Raw scores (Q @ Kᵀ):
+tensor([[0.9800, 0.7000, 0.7000],
+        [0.7000, 0.8200, 0.8200],
+        [0.7000, 0.8200, 0.8200]])
+  Each row = one word's scores against all words
+  Row 0 (crane): how much crane cares about crane, lifted, steel
+
+STEP 2 — Attention weights after softmax:
+tensor([[0.3980, 0.3010, 0.3010],
+        [0.3070, 0.3460, 0.3460],
+        [0.3070, 0.3460, 0.3460]])
+  Each row sums to 1.0 (check below):
+  [1.0, 1.0, 1.0]
+
+STEP 3 — Output after attention (context-aware vectors):
+  crane  (before) = [0.699999988079071, 0.699999988079071]
+  crane  (after)  = [0.33889463543891907, 0.8203684091567993]
+
+  lifted (before) = [0.10000000149011612, 0.8999999761581421]
+  lifted (after)  = [0.28433215618133545, 0.8385559320449829]
+
+  steel  (before) = [0.10000000149011612, 0.8999999761581421]
+  steel  (after)  = [0.28433215618133545, 0.8385559320449829]
+
+>>> WHAT TO NOTICE:
+    Look at crane's vector. It started at [0.7, 0.7] — perfectly ambiguous.
+    After attention, the second number (machine-like) grew larger.
+    crane absorbed information from lifted and steel, which are strongly
+    machine-like. The ambiguity is resolved through the conversation!
+
+============================================================
+EXERCISE 3 — Scaled Dot-Product Attention (full formula)
+============================================================
+
+Input shape: batch=1, tokens=3, channels=2
+Input X:
+ tensor([[[1., 0.],
+         [0., 1.],
+         [1., 1.]]])
+
+Step A — Raw scores Q @ Kᵀ:
+tensor([[[1., 0., 1.],
+         [0., 1., 1.],
+         [1., 1., 2.]]])
+
+Step B — Scaled scores (divided by √2 = 1.414):
+tensor([[[0.7071, 0.0000, 0.7071],
+         [0.0000, 0.7071, 0.7071],
+         [0.7071, 0.7071, 1.4142]]])
+
+Step C — Attention weights after softmax:
+tensor([[[0.4010, 0.1980, 0.4010],
+         [0.1980, 0.4010, 0.4010],
+         [0.2480, 0.2480, 0.5030]]])
+
+Step D — Final output (context-aware):
+tensor([[[0.8022, 0.5989],
+         [0.5989, 0.8022],
+         [0.7517, 0.7517]]])
+
+>>> WHAT TO NOTICE:
+    The shape journey Zachary described:
+      Input X:         [1, 3, 2]
+      After Q @ Kᵀ:   [1, 3, 3]   ← explodes to TxT
+      After softmax:   [1, 3, 3]   ← still TxT
+      After @ V:       [1, 3, 2]    ← back to original shape!
+
+    The output has the SAME shape as the input, but each vector has
+    absorbed context from its neighbors. That's the magic.
+
+============================================================
+EXERCISE 4 — The Causal Mask
+============================================================
+
+Step 1 — Lower-triangular mask (1=allowed, 0=blocked):
+tensor([[1., 0., 0.],
+        [1., 1., 0.],
+        [1., 1., 1.]])
+
+  Token 1 can only see: itself
+  Token 2 can see:      itself + token 1
+  Token 3 can see:      itself + token 1 + token 2
+
+Step 2 — Scores after masking (upper triangle = -inf):
+tensor([[[0.7071,   -inf,   -inf],
+         [0.0000, 0.7071,   -inf],
+         [0.7071, 0.7071, 1.4142]]])
+
+Step 3 — Causal attention weights:
+tensor([[[1.0000, 0.0000, 0.0000],
+         [0.3300, 0.6700, 0.0000],
+         [0.2480, 0.2480, 0.5030]]])
+
+>>> WHAT TO NOTICE:
+    Row 0 (token 1): only pays attention to itself — can't see future
+    Row 1 (token 2): can attend to token 1 and itself
+    Row 2 (token 3): can attend to all tokens (the whole past)
+
+    The upper-right triangle is all zeros. The model can't cheat.
+    This is how every GPT-style model works under the hood.
+
+============================================================
+EXERCISE 5 — Multi-Head Attention (the parallel conversations)
+============================================================
+
+Setup: B=1, T=3, C=8, n_head=2, head_dim=4
+
+After linear projection: Q shape = [1, 3, 8]
+After reshape + transpose: Q shape = [1, 2, 3, 4]
+  Meaning: (batch=1, heads=2, tokens=3, head_dim=4)
+
+Attention weights shape: [1, 2, 3, 3]
+  (1 batch × 2 heads × 3×3 attention matrix)
+Output per head shape: [1, 2, 3, 4]
+After merging heads: [1, 3, 8]
+Final output shape: [1, 3, 8]
+
+>>> WHAT TO NOTICE:
+    The shape journey for multi-head:
+      Input X:               [1, 3, 8]
+      After Q/K/V projection: [1, 2, 3, 4]  (B, n_head, T, head_dim)
+      Attention weights:     [1, 2, 3, 3]
+      After merging heads:   [1, 3, 8]     ← back to (B, T, C)
+      Final output:          [1, 3, 8]     ← same as input!
+
+    The input and output shapes match. This is what allows transformers
+    to be stacked — the output of one block feeds cleanly into the next.
+    GPT-3 does this 96 times. Same block, stacked 96 layers deep.
+
+============================================================
+BONUS — Full CausalSelfAttention Module
+============================================================
+
+Input shape:  [1, 3, 8]
+Output shape: [1, 3, 8]
+
+Input (first token): [-0.039000000804662704, -0.8009999990463257, -0.4959999918937683, -0.3619999885559082, 0.5849999785423279, -1.156000018119812, -0.14300000667572021, -0.19499999284744263]
+Output(first token): [-0.27399998903274536, -0.4620000123977661, -0.03099999949336052, -0.0020000000949949026, -0.37299999594688416, -0.08799999952316284, 0.17000000178813934, 0.08900000154972076]
+
+>>> WHAT TO NOTICE:
+    Input and output shapes are identical.
+    But the output values are different — each token has absorbed
+    information from its causal context (past tokens only).
+
+    This is exactly the module Zachary showed at the very end.
+    The "nightmare" code from the beginning of the video.
+    Now it's just a map of things you built yourself, step by step.
+
+Congrats — attention has clicked. 🎉
+
