@@ -1,6 +1,6 @@
 # Attention Is All You Need — PyTorch Exercises
 
-A hands-on guided walkthrough of the Transformer attention mechanism, built from absolute scratch in PyTorch. Every exercise is tied to the intuition from [Zachary Huang's "Attention Click Forever" video](https://www.youtube.com/watch?v=iDulhoQ2pro).
+A hands-on guided walkthrough of the Transformer attention mechanism, built from absolute scratch in PyTorch. Every exercise is tied to the intuition from [Zachary Huang's "Give me 20 min, I will make Attention click forever"](https://youtu.be/4vye3iUrR-g?si=ZJgClyP517GURfvv).
 
 ## What You'll Build
 
@@ -120,5 +120,5 @@ Ideas for extending the series, roughly in order of progression:
 ## References
 
 - [Attention Is All You Need](https://arxiv.org/abs/1706.03762) — Vaswani et al., 2017
-- [Zachary Huang — "Attention Click Forever"](https://www.youtube.com/@zach_explainss) — the video that inspired these exercises
+- [Zachary Huang — "Give me 20 min, I will make Attention click forever"](https://youtu.be/4vye3iUrR-g?si=ZJgClyP517GURfvv) — the video that inspired these exercises
 - [Andrej Karpathy — nanoGPT](https://github.com/karpathy/nanoGPT) — the clean GPT implementation these exercises are modeled after
