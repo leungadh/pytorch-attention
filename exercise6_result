@@ -1,0 +1,66 @@
+============================================================
+EXERCISE 6 — Learned QKV Projections
+============================================================
+
+Input X  (shape [3, 4]):
+  crane  = [0.699999988079071, 0.699999988079071, 0.0, 0.0]
+  lifted = [0.10000000149011612, 0.8999999761581421, 0.10000000149011612, 0.0]
+  steel  = [0.10000000149011612, 0.8999999761581421, 0.0, 0.10000000149011612]
+
+────────────────────────────────────────
+PART A — No projections (Q = K = V = X)
+────────────────────────────────────────
+
+Q == K == V == X? True
+
+Attention weights:
+tensor([[0.3650, 0.3170, 0.3170],
+        [0.3200, 0.3410, 0.3390],
+        [0.3200, 0.3390, 0.3410]])
+
+crane (before): [0.699999988079071, 0.699999988079071, 0.0, 0.0]
+crane (after) : [0.31908074021339417, 0.8269730806350708, 0.03174327313899994, 0.03174327313899994]
+
+────────────────────────────────────────
+PART B — Learned projections (separate Wq, Wk, Wv)
+────────────────────────────────────────
+
+After projection — are Q, K, V still equal to X?
+  Q == X? False
+  K == X? False
+  V == X? False
+  Q == K? False
+  Q == V? False
+
+X  [crane]: [0.699999988079071, 0.699999988079071, 0.0, 0.0]
+Q  [crane]: [0.5580912232398987, -0.006059505045413971, 0.051770180463790894, 0.3059838116168976]
+K  [crane]: [0.3215431272983551, -0.20230332016944885, -0.4376331865787506, -0.3126536011695862]
+V  [crane]: [0.3284562826156616, 0.33733493089675903, -0.0008735209703445435, 0.049310460686683655]
+
+Attention weights:
+tensor([[0.3510, 0.3250, 0.3240],
+        [0.3490, 0.3250, 0.3260],
+        [0.3500, 0.3240, 0.3270]], grad_fn=<RoundBackward1>)
+
+crane (before):           [0.699999988079071, 0.699999988079071, 0.0, 0.0]
+crane (after, no proj):   [0.31908074021339417, 0.8269730806350708, 0.03174327313899994, 0.03174327313899994]
+crane (after, learned):   [0.19360779225826263, 0.3561066687107086, -0.049509141594171524, -0.07938885688781738]
+
+>>> WHAT TO NOTICE:
+    PART A: Q, K, V are identical copies of X. Every word both asks
+    and answers the same question, and contributes exactly what it
+    queries for. The attention weights are symmetric where inputs
+    are similar.
+
+    PART B: After projection, Q, K, and V are all different from X
+    and from each other — even though they came from the same input.
+    Wq, Wk, Wv each apply a different linear transformation, so:
+      - Q captures what each word is SEARCHING for
+      - K captures what each word is ADVERTISING
+      - V captures what each word will CONTRIBUTE if selected
+
+    This separation is what gives the model its expressive power.
+    During training, gradients flow back through Wq, Wk, Wv
+    independently — they specialise for different roles.
+    Q=K=V=X can never learn this distinction.
+

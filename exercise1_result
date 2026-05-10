@@ -1,0 +1,18 @@
+============================================================
+EXERCISE 1 — Word Embeddings & The Static Problem
+============================================================
+
+Vector for 'bank' in 'river bank' context:
+tensor([[ 1.3123,  0.6872, -1.0892, -0.3553]], grad_fn=<EmbeddingBackward0>)
+
+Vector for 'bank' in 'money bank' context:
+tensor([[ 1.3123,  0.6872, -1.0892, -0.3553]], grad_fn=<EmbeddingBackward0>)
+
+Are they identical? True
+
+>>> WHAT TO NOTICE:
+    Both vectors are exactly the same — even though the meaning is completely
+    different. This is the static problem Zachary described.
+    The attention mechanism is the solution: it will MODIFY these vectors
+    using context from neighboring words.
+

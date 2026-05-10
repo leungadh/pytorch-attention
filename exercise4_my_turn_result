@@ -1,0 +1,41 @@
+============================================================
+EXERCISE 4 — MY TURN: Causal Mask for a 5-Token Sentence
+============================================================
+
+Step 1 — Lower-triangular mask for T=5:
+tensor([[1., 0., 0., 0., 0.],
+        [1., 1., 0., 0., 0.],
+        [1., 1., 1., 0., 0.],
+        [1., 1., 1., 1., 0.],
+        [1., 1., 1., 1., 1.]])
+
+What each token can attend to:
+  Token 0 can see: tokens 0
+  Token 1 can see: tokens 0, 1
+  Token 2 can see: tokens 0, 1, 2
+  Token 3 can see: tokens 0, 1, 2, 3
+  Token 4 can see: tokens 0, 1, 2, 3, 4
+
+  → Token 4 (the last token) can see ALL 5 tokens: 0, 1, 2, 3, 4
+    Token 0 (the first token) can only see itself.
+
+Step 2 — Causal attention weights (5×5):
+tensor([[1.0000, 0.0000, 0.0000, 0.0000, 0.0000],
+        [0.0490, 0.9510, 0.0000, 0.0000, 0.0000],
+        [0.1250, 0.2460, 0.6280, 0.0000, 0.0000],
+        [0.0080, 0.0070, 0.0930, 0.8910, 0.0000],
+        [0.0050, 0.0080, 0.1100, 0.2980, 0.5790]])
+
+Step 3 — Upper triangle is all zeros? True
+
+>>> WHAT TO NOTICE:
+    The mask scales naturally to any sequence length — torch.tril()
+    always produces the right lower-triangular shape for T tokens.
+
+    Row 0: [1, 0, 0, 0, 0] — token 0 attends only to itself (weight=1.0)
+    Row 1: [*, *, 0, 0, 0] — token 1 splits attention across tokens 0–1
+    Row 4: [*, *, *, *, *] — token 4 can attend to the full history
+
+    The upper-right triangle stays exactly zero after softmax.
+    No future token leaks through, regardless of sequence length.
+

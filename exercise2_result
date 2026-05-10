@@ -1,0 +1,39 @@
+============================================================
+EXERCISE 2 — The QKV Conversation (crane lifted steel)
+============================================================
+
+Original word vectors (before attention):
+  crane  = [0.699999988079071, 0.699999988079071]
+  lifted = [0.10000000149011612, 0.8999999761581421]
+  steel  = [0.10000000149011612, 0.8999999761581421]
+
+STEP 1 — Raw scores (Q @ Kᵀ):
+tensor([[0.9800, 0.7000, 0.7000],
+        [0.7000, 0.8200, 0.8200],
+        [0.7000, 0.8200, 0.8200]])
+  Each row = one word's scores against all words
+  Row 0 (crane): how much crane cares about crane, lifted, steel
+
+STEP 2 — Attention weights after softmax:
+tensor([[0.3980, 0.3010, 0.3010],
+        [0.3070, 0.3460, 0.3460],
+        [0.3070, 0.3460, 0.3460]])
+  Each row sums to 1.0 (check below):
+  [0.9999998807907104, 1.0, 1.0]
+
+STEP 3 — Output after attention (context-aware vectors):
+  crane  (before) = [0.699999988079071, 0.699999988079071]
+  crane  (after)  = [0.33889463543891907, 0.8203684091567993]
+
+  lifted (before) = [0.10000000149011612, 0.8999999761581421]
+  lifted (after)  = [0.28433215618133545, 0.8385559320449829]
+
+  steel  (before) = [0.10000000149011612, 0.8999999761581421]
+  steel  (after)  = [0.28433215618133545, 0.8385559320449829]
+
+>>> WHAT TO NOTICE:
+    Look at crane's vector. It started at [0.7, 0.7] — perfectly ambiguous.
+    After attention, the second number (machine-like) grew larger.
+    crane absorbed information from lifted and steel, which are strongly
+    machine-like. The ambiguity is resolved through the conversation!
+

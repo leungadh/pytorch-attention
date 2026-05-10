@@ -1,0 +1,85 @@
+============================================================
+EXERCISE 6 — MY TURN: Inspecting and Training Wq, Wk, Wv
+============================================================
+
+PART A — Initial weight matrices (random, before training)
+────────────────────────────────────────
+Wq:
+tensor([[ 0.3820,  0.4150, -0.1170,  0.4590],
+        [-0.1100,  0.1010, -0.2430,  0.2940],
+        [ 0.4410, -0.3670,  0.4350,  0.0940],
+        [ 0.3690,  0.0680,  0.2410, -0.0710]])
+
+Wk:
+tensor([[ 0.3850,  0.0740, -0.2330,  0.1270],
+        [-0.2300, -0.0590, -0.2030,  0.3320],
+        [-0.3950, -0.2310, -0.1410, -0.3010],
+        [ 0.0470, -0.4940,  0.4520, -0.4250]])
+
+Wv:
+tensor([[ 0.3860,  0.0830, -0.1620,  0.3090],
+        [ 0.0780,  0.4040,  0.0550, -0.1580],
+        [ 0.1340, -0.1360,  0.2100,  0.4460],
+        [ 0.2890, -0.2190,  0.2890,  0.0890]])
+
+Are Wq == Wk? False
+Are Wq == Wv? False
+Are Wk == Wv? False
+
+>>> WHAT TO NOTICE:
+    All three matrices are initialised from the same distribution
+    (Kaiming uniform by default in nn.Linear), but each draws
+    independently — so they start different and will only diverge
+    further during training.
+
+PART B — One gradient step: do Wq, Wk, Wv receive equal gradients?
+────────────────────────────────────────
+
+Loss: 0.8331
+
+Mean absolute weight change after one step:
+  ΔWq = 0.000121
+  ΔWk = 0.000121
+  ΔWv = 0.013478
+
+Are the changes equal?  ΔWq == ΔWk: True  |  ΔWq == ΔWv: False
+
+Wq after one step:
+tensor([[ 0.3820,  0.4150, -0.1170,  0.4590],
+        [-0.1100,  0.1010, -0.2430,  0.2940],
+        [ 0.4410, -0.3670,  0.4350,  0.0940],
+        [ 0.3690,  0.0680,  0.2410, -0.0710]])
+
+Wk after one step:
+tensor([[ 0.3860,  0.0740, -0.2330,  0.1270],
+        [-0.2300, -0.0590, -0.2030,  0.3320],
+        [-0.3950, -0.2300, -0.1410, -0.3010],
+        [ 0.0470, -0.4940,  0.4520, -0.4250]])
+
+Wv after one step:
+tensor([[ 0.3990,  0.1170, -0.1610,  0.3100],
+        [ 0.0880,  0.4310,  0.0560, -0.1570],
+        [ 0.1510, -0.0920,  0.2120,  0.4480],
+        [ 0.3060, -0.1740,  0.2900,  0.0910]])
+
+>>> WHAT TO NOTICE:
+    ΔWq, ΔWk, ΔWv are all different — each matrix received a unique
+    gradient signal from the same forward pass.
+
+    WHY? Backprop flows differently through each matrix:
+      - Wv directly controls the VALUES that get aggregated.
+        Its gradient comes straight from the output error.
+      - Wq and Wk control the ATTENTION PATTERN (the weights).
+        Their gradients flow back through softmax and the scores,
+        a longer and more indirect path.
+
+    Over thousands of steps these different signals drive the
+    three matrices to specialise:
+      Wq  → learns what each word should search for
+      Wk  → learns how each word should present itself to queries
+      Wv  → learns what information to pass along when selected
+
+    A single shared matrix (Q=K=V=X) can never develop these
+    three distinct roles — it receives one blended gradient
+    that averages away the specialisation.
+

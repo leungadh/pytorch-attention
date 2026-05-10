@@ -1,0 +1,28 @@
+============================================================
+EXERCISE 1 — MY TURN: Exploring Embedding Lookup
+============================================================
+
+Vectors for word IDs 0, 1, and 2:
+  ID 0: [1.8948456048965454, -0.8975089192390442, 0.36174070835113525, 0.8255464434623718, -0.08756507933139801, 1.4358162879943848, 0.5304439067840576, 0.5491173267364502]
+  ID 1: [-0.2883298993110657, -1.3650490045547485, -0.7905625700950623, 0.37292754650115967, -1.4050419330596924, -1.9634827375411987, -0.2087780088186264, -0.12863118946552277]
+  ID 2: [1.5593823194503784, -0.772685706615448, -1.3785878419876099, -1.050074577331543, 0.5502961874008179, 0.025454120710492134, -0.17802494764328003, 1.0271847248077393]
+
+Are ID 0 and ID 1 identical? False
+Are ID 0 and ID 2 identical? False
+Are ID 1 and ID 2 identical? False
+
+>>> WHY ARE THEY DIFFERENT?
+    nn.Embedding is just a matrix of shape (vocab_size, n_embed) —
+    here (50, 8). Each row is one word's vector, initialised independently
+    from a random normal distribution (mean=0, std=1) by default.
+
+    Looking up ID 0, 1, and 2 simply returns rows 0, 1, and 2 of that
+    matrix. Since every row is drawn independently at random, they will
+    almost certainly be different — just like three random 8-dimensional
+    points in space are almost certainly not the same point.
+
+    CONTRAST with Exercise 1's "bank" example:
+    Looking up the SAME ID twice always returns the SAME row — that's
+    the static problem. Different IDs → different rows → different vectors.
+
+Same ID looked up twice — still identical? True

@@ -1,0 +1,47 @@
+============================================================
+EXERCISE 3 — MY TURN: Why Scaling Matters at Large dk
+============================================================
+
+────────────────────────────────────────
+dk = 2  (√dk = 1.4)
+────────────────────────────────────────
+  Max raw score:        5.07
+  Max scaled score:     3.59
+  Softmax on raw    — max weight: 0.9740  ← near 1, collapsed!
+  Softmax on scaled — max weight: 0.9205  ← near 1, collapsed!
+
+────────────────────────────────────────
+dk = 64  (√dk = 8.0)
+────────────────────────────────────────
+  Max raw score:       65.06
+  Max scaled score:     8.13
+  Softmax on raw    — max weight: 1.0000  ← near 1, collapsed!
+  Softmax on scaled — max weight: 0.9988  ← near 1, collapsed!
+
+────────────────────────────────────────
+dk = 512  (√dk = 22.6)
+────────────────────────────────────────
+  Max raw score:      556.36
+  Max scaled score:    24.59
+  Softmax on raw    — max weight: 1.0000  ← near 1, collapsed!
+  Softmax on scaled — max weight: 1.0000  ← near 1, collapsed!
+
+>>> WHAT TO NOTICE:
+    At dk=2 (Exercise 3's setup), raw and scaled scores are close —
+    scaling makes little practical difference.
+
+    At dk=64 (GPT-2's head_dim), raw scores are already large enough
+    that softmax starts concentrating weight on one token. Scaling
+    brings it back to a healthy spread.
+
+    At dk=512, raw dot products can reach hundreds. Softmax treats
+    this like a near-infinite temperature gap — the highest score
+    gets almost all the weight (→ 1.0) and every other token gets
+    almost zero. The model effectively stops listening to context.
+
+    Dividing by √dk neutralises this: it keeps scores in roughly the
+    same range regardless of dimension, so softmax always produces a
+    meaningful distribution rather than a collapsed spike.
+
+    This is why the scaling factor is non-negotiable in real models.
+

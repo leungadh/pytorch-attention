@@ -1,0 +1,36 @@
+============================================================
+EXERCISE 4 — The Causal Mask
+============================================================
+
+Step 1 — Lower-triangular mask (1=allowed, 0=blocked):
+tensor([[1., 0., 0.],
+        [1., 1., 0.],
+        [1., 1., 1.]])
+
+  Token 1 can only see: itself
+  Token 2 can see:      itself + token 1
+  Token 3 can see:      itself + token 1 + token 2
+
+Step 2 — Scores after masking (upper triangle = -inf):
+tensor([[[0.7071,   -inf,   -inf],
+         [0.0000, 0.7071,   -inf],
+         [0.7071, 0.7071, 1.4142]]])
+
+Step 3 — Causal attention weights:
+tensor([[[1.0000, 0.0000, 0.0000],
+         [0.3300, 0.6700, 0.0000],
+         [0.2480, 0.2480, 0.5030]]])
+
+Step 4 — Final output (causal context-aware):
+tensor([[[1.0000, 0.0000],
+         [0.3302, 0.6698],
+         [0.7517, 0.7517]]])
+
+>>> WHAT TO NOTICE:
+    Row 0 (token 1): only pays attention to itself — can't see future
+    Row 1 (token 2): can attend to token 1 and itself
+    Row 2 (token 3): can attend to all tokens (the whole past)
+
+    The upper-right triangle is all zeros. The model can't cheat.
+    This is how every GPT-style model works under the hood.
+

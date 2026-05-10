@@ -1,0 +1,38 @@
+============================================================
+EXERCISE 2 — MY TURN: Bird vs. Machine Context
+============================================================
+
+────────────────────────────────────────
+MACHINE context
+────────────────────────────────────────
+  crane  (before) = [0.699999988079071, 0.699999988079071]
+  crane  (after)  = [0.33889463543891907, 0.8203684091567993]
+
+  Attention weights for crane (row 0):
+    [0.3981577157974243, 0.30092111229896545, 0.30092111229896545]
+    → crane attends most to: word 0
+
+────────────────────────────────────────
+BIRD context
+────────────────────────────────────────
+  crane  (before) = [0.8999999761581421, 0.10000000149011612]
+  crane  (after)  = [0.8684201240539551, 0.13157987594604492]
+
+  Attention weights for crane (row 0):
+    [0.3421006500720978, 0.3421006500720978, 0.31579872965812683]
+    → crane attends most to: word 0
+
+>>> WHAT TO NOTICE:
+    In the MACHINE context, crane started ambiguous [0.7, 0.7].
+    After attention its machine dimension (index 1) grew — it shifted
+    toward [0.34, 0.82], pulled by "lifted" and "steel".
+
+    In the BIRD context, crane started bird-like [0.9, 0.1].
+    After attention its bird dimension (index 0) stayed dominant —
+    it shifted toward something like [0.87, 0.13], reinforced by
+    "wings" and "feathers".
+
+    Same word "crane", opposite outcomes — purely because of context.
+    This is exactly the static problem that attention solves:
+    the output vector is shaped by the neighborhood, not just the word.
+
