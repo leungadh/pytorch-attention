@@ -14,6 +14,7 @@ By the end of these exercises, you will have implemented every piece of the atte
 | 4 | Causal Mask | Preventing the model from "cheating" |
 | 5 | Multi-Head Attention | Parallel conversations via `view` + `transpose` |
 | Bonus | `CausalSelfAttention` module | The complete `nn.Module`, demystified |
+| 6 | Learned QKV Projections | Why `Q = K = V = X` is a shortcut, and what separate `Wq`, `Wk`, `Wv` matrices unlock |
 
 ## Files
 
@@ -30,6 +31,7 @@ Each exercise is available as a standalone file. Every exercise file ends with a
 | `exercise4.py` | Builds a `torch.tril` causal mask and applies `masked_fill(..., -inf)` so future tokens contribute zero attention weight |
 | `exercise5.py` | Fused QKV projection via `nn.Linear(C, 3*C)`, head splitting with `.view` + `.transpose`, all heads computed in one batched matmul, then merged back |
 | `exercise_bonus.py` | Packages exercises 1–5 into a clean `CausalSelfAttention(nn.Module)` matching nanoGPT's structure |
+| `exercise6.py` | Side-by-side comparison of `Q = K = V = X` vs. separate `Wq`, `Wk`, `Wv` projections on "crane lifted steel"; shows Q, K, V diverge into distinct vectors and why that separation is essential for learning |
 
 ### My Turn
 
@@ -102,6 +104,18 @@ By Exercise 3, every symbol in this formula will be something you've written you
 **Causal Mask** — GPT generates one token at a time. It must not be allowed to see future tokens. Setting future scores to `-inf` before softmax makes those positions contribute zero attention weight.
 
 **Multi-Head Attention** — One attention calculation isn't rich enough to capture all the structure in language. Running multiple "heads" in parallel — each potentially specializing in different relationships — dramatically increases the model's expressive power.
+
+## Future Exercises
+
+Ideas for extending the series, roughly in order of progression:
+
+| # | Topic | What it adds |
+|---|-------|-------------|
+| 7 | Positional Encoding | Attention is permutation-invariant — "crane lifted steel" and "steel lifted crane" currently produce the same output. Add sinusoidal or learned positional embeddings to inject token order |
+| 8 | Full Transformer Block | Wrap `CausalSelfAttention` with a residual connection, layer norm, and a two-layer MLP (feed-forward) sublayer — the complete GPT building block |
+| 9 | Attention Weight Visualisation | Plot the `(T × T)` attention weight matrix as a heatmap with `matplotlib`; seeing which tokens attend to which is the most intuitive way to verify the model's behaviour |
+| 10 | KV Cache | Show how inference speeds up by caching past `K` and `V` tensors — each new token then only computes one row of the attention matrix instead of recomputing the full `T × T` |
+| 11 | Minimal Trainable GPT | Combine embedding + positional encoding + N transformer blocks + a language model head into a tiny GPT that can be trained on a short text (e.g. Shakespeare) |
 
 ## References
 
